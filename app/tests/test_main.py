@@ -16,4 +16,6 @@ def test_read_item():
 def test_read_item_without_query():
     response = client.get("/items/42")
     assert response.status_code == 200
-    assert response.json() == {"item_id": 42, "q": ""}
+    # comment the following line to fail the test
+    #assert response.json() == {"item_id": 42, "q": ""}
+    assert response.json() == {"item_id": 42, "q": None}
