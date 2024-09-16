@@ -20,11 +20,18 @@ pipeline {
                 '''
             }
         }
-        stage('Start application') {
+        stage('Start Application') {
             steps {
                 sh '''
                     . ${PYTHON_ENV}/bin/activate
                     uvicorn app.main:app --reload
+                '''
+            }
+        }
+         stage('Run Tests') {
+            steps {
+                sh '''
+                    . ${PYTHON_ENV}/bin/activate
                     pytest 
                 '''
             }
