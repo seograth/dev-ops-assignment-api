@@ -15,7 +15,7 @@ pipeline {
             steps {
                 sh '''
                     python3 -m venv ${PYTHON_ENV}
-                    source ${PYTHON_ENV}/bin/activate
+                    . ${PYTHON_ENV}/bin/activate
                     pip install -r requirements.txt
                 '''
             }
@@ -23,7 +23,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh '''
-                    source ${PYTHON_ENV}/bin/activate
+                    . ${PYTHON_ENV}/bin/activate
                     pytest tests/ --maxfail=1 --disable-warnings
                 '''
             }
