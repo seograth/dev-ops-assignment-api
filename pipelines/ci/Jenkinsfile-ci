@@ -20,11 +20,12 @@ pipeline {
                 '''
             }
         }
-        stage('Run Tests') {
+        stage('Start application') {
             steps {
                 sh '''
                     . ${PYTHON_ENV}/bin/activate
-                    pytest tests/ --maxfail=1 --disable-warnings
+                    uvicorn app.main:app --reload
+                    pytest 
                 '''
             }
         }
