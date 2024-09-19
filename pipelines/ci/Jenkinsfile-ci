@@ -57,19 +57,18 @@ pipeline {
                 }
             }
         }
-        stage('Trigger CD Pipeline') {
-            steps {
-                script {
-                    build job: 'fastApi-cd', 
-                          parameters: [
-                              string(name: 'DOCKER_IMAGE', value: "${DOCKER_IMAGE}"),
-                              string(name: 'VERSION_TAG', value: "${VERSION_TAG}")
-                          ]
-                }
-            }
-        }
     }
+    
     post {
+        success {
+            def params: [
+                string(name: 'DOCKER_IMAGE', value: "${DOCKER_IMAGE}"),
+                string(name: 'VERSION_TAG', value: "${VERSION_TAG}")
+            ]
+
+            build job: 'fastApi-cd', parameters: params
+        }
+
         always {
             // Stop FastAPI and clean up
             sh '''
