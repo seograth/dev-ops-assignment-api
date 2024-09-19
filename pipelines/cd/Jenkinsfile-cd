@@ -27,7 +27,7 @@ pipeline {
                     docker run -d \\
                         --name my-app \\
                         --restart always \\
-                        -p 80:80 \\
+                        -p 8000:80 \\
                         ${params.DOCKER_IMAGE}:${params.VERSION_TAG}
                     """
                 }
