@@ -58,15 +58,13 @@ pipeline {
             }
         }
     }
-    
+
     post {
         success {
-            def params: [
+            build job: 'fastApi-cd', parameters: [
                 string(name: 'DOCKER_IMAGE', value: "${DOCKER_IMAGE}"),
                 string(name: 'VERSION_TAG', value: "${VERSION_TAG}")
             ]
-
-            build job: 'fastApi-cd', parameters: params
         }
 
         always {
