@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         PYTHON_ENV = 'venv'
+        DOCKER_BUILDKIT = 1
         DOCKER_IMAGE = 'seograth/fastapi-demo'
         VERSION_TAG = 'latest'
     }
