@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         PYTHON_ENV = 'venv'
+        DOCKER_IMAGE = 'seograth/fastapi-demo'
+        VERSION_TAG = 'latest'
     }
 
     stages {
@@ -38,10 +40,35 @@ pipeline {
                 '''
             }
         }
+         stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${DOCKER_IMAGE}:${VERSION_TAG}")
+                }
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials-id', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh '''
+                        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                        docker push ${DOCKER_IMAGE}:${VERSION_TAG}
+                    '''
+                }
+            }
+        }
     }
     post {
         always {
-            cleanWs()
+            // Stop FastAPI and clean up
+            sh '''
+                #!/bin/bash
+                if [ -f fastapi.pid ]; then
+                    kill $(cat fastapi.pid) || true
+                    rm fastapi.pid
+                fi
+                rm -rf ${PYTHON_ENV}
+            '''
         }
     }
 }
