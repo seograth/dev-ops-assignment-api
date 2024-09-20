@@ -49,15 +49,18 @@ pipeline {
         stage('Health Check') {
             steps {
                 script {
-                    def healthCheck = sh(
-                        script: "curl -s -o /dev/null -w '%{http_code}' ${HEALTHCHECK_URL}",
-                        returnStdout: true
-                    ).trim()
+            retry(5) {
+                sleep(time: 5, unit: 'SECONDS') // Wait for 5 seconds before retrying
+                def healthCheck = sh(
+                    script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/health",
+                    returnStdout: true
+                ).trim()
 
-                    if (healthCheck != '200') {
-                        error("Health check failed. Received HTTP status ${healthCheck}")
-                    }
+                if (healthCheck != '200') {
+                    error("Health check failed. Received HTTP status ${healthCheck}")
                 }
+            }
+        }`
             }
         }
 
