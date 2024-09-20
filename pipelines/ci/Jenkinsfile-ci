@@ -4,7 +4,7 @@ pipeline {
     environment {
         PYTHON_ENV = 'venv'
         DOCKER_IMAGE = 'seograth/fastapi-demo'
-        VERSION_TAG = 'latest'
+        // VERSION_TAG = 'latest'
     }
 
     stages {
