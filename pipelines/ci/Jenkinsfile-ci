@@ -2,9 +2,10 @@ pipeline {
     agent any
 
     environment {
+        GIT_COMMIT=$(git rev-parse --short HEAD)
         PYTHON_ENV = 'venv'
         DOCKER_IMAGE = 'seograth/fastapi-demo'
-        VERSION_TAG = 'latest'
+        VERSION_TAG = ${GIT_COMMIT}
     }
 
     stages {
