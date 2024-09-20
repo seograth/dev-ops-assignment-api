@@ -6,12 +6,19 @@ pipeline {
         string(name: 'VERSION_TAG', defaultValue: 'latest', description: 'Docker image tag')
     }
 
+    environment {
+        DOCKER_CONTAINER_NAME = 'fastapi'
+        LATEST_IMAGE = "${DOCKER_IMAGE}:latest"
+        HEALTHCHECK_URL = 'http://localhost:8000/health'
+    }
+
     stages {
 
         stage('Pull Docker Image') {
             steps {
                 script {
-                    sh "docker pull ${params.DOCKER_IMAGE}:${params.VERSION_TAG}"
+                    sh "docker pull ${DOCKER_IMAGE}:${VERSION_TAG}"
+                    sh "docker pull ${LATEST_IMAGE}"
                 }
             }
         }
@@ -19,26 +26,74 @@ pipeline {
         stage('Deploy Docker Image') {
             steps {
                 script {
-                    // Stop and remove any existing container with the same name
-                    sh "docker ps -q -f name=my-app | xargs -r docker stop | xargs -r docker rm"
+                    def previousImage = sh(
+                        script: "docker ps --filter name=${DOCKER_CONTAINER_NAME} --format '{{.Image}}'",
+                        returnStdout: true
+                    ).trim()
 
-                    // Run the new Docker container
+                    sh "docker ps -q -f name=${DOCKER_CONTAINER_NAME} | xargs -r docker stop | xargs -r docker rm"
+
                     sh """
                     docker run -d \\
-                        --name my-app \\
+                        --name ${DOCKER_CONTAINER_NAME} \\
                         --restart always \\
                         -p 8000:80 \\
                         ${params.DOCKER_IMAGE}:${params.VERSION_TAG}
                     """
+
+                    env.PREVIOUS_IMAGE = previousImage ? previousImage : LATEST_IMAGE
                 }
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                script {
+                    def healthCheck = sh(
+                        script: "curl -s -o /dev/null -w '%{http_code}' ${HEALTHCHECK_URL}",
+                        returnStdout: true
+                    ).trim()
+
+                    if (healthCheck != '200') {
+                        error("Health check failed. Received HTTP status ${healthCheck}")
+                    }
+                }
+            }
+        }
+
+        stage('Post-deployment') {
+            steps {
+                echo "Application deployed successfully"
             }
         }
     }
 
     post {
-        always {
-            // Clean up any resources if needed
-            sh "docker system prune -f"
+        failure {
+            echo "Deployment failed. Rolling back..."
+
+            script {
+                // Rollback mechanism: Re-run the previous version of the container
+                def previousImage = sh(
+                    script: "docker images --format '{{.Repository}}:{{.Tag}}' | grep ${DOCKER_CONTAINER_NAME}",
+                    returnStdout: true
+                ).trim()
+
+                if (previousImage) {
+                    sh """
+                    docker stop ${DOCKER_CONTAINER_NAME} || true
+                    docker rm ${DOCKER_CONTAINER_NAME} || true
+                    docker run -d --name ${DOCKER_CONTAINER_NAME} --restart always -p 8000:80 ${previousImage}
+                    """
+                    echo "Rolled back to previous version: ${previousImage}"
+                } else {
+                    echo "No previous version found. Please deploy manually"
+                }
+            }
+        }
+
+        success {
+            echo "Deployment succeeded!"
         }
     }
 }
