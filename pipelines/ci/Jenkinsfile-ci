@@ -2,10 +2,9 @@ pipeline {
     agent any
 
     environment {
-        GIT_COMMIT=$(git rev-parse --short HEAD)
         PYTHON_ENV = 'venv'
         DOCKER_IMAGE = 'seograth/fastapi-demo'
-        VERSION_TAG = ${GIT_COMMIT}
+        VERSION_TAG = 'latest'
     }
 
     stages {
@@ -39,6 +38,15 @@ pipeline {
                     . ${PYTHON_ENV}/bin/activate
                     pytest 
                 '''
+            }
+        }
+         stage('Pull Git Commit Hash') {
+            steps {
+                script {
+                    // Capture the Git commit hash using 'sh' and assign it to an environment variable
+                    env.VERSION_TAG = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    echo "Git Commit Hash: ${env.VERSION_TAG}"
+                }
             }
         }
          stage('Build Docker Image') {
