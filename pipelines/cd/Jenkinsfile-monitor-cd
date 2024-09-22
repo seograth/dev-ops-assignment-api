@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_COMPOSE_FILE_PROMETHEUS = 'prometheus_stack/docker-compose/docker-compose.main.yml'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Deploy Monitoring Stack') {
+            steps {
+                script {
+                    dir('prometheus_stack/docker-compose') {
+                        sh 'docker-compose -f ${DOCKER_COMPOSE_FILE_PROMETHEUS} up -d'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment succeeded!"
+        }
+    }
+}

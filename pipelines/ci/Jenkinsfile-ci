@@ -43,7 +43,6 @@ pipeline {
          stage('Pull Git Commit Hash') {
             steps {
                 script {
-                    // Capture the Git commit hash using 'sh' and assign it to an environment variable
                     env.VERSION_TAG = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                     echo "Git Commit Hash: ${env.VERSION_TAG}"
                 }
@@ -77,7 +76,6 @@ pipeline {
         }
 
         always {
-            // Stop FastAPI and clean up
             sh '''
                 #!/bin/bash
                 if [ -f fastapi.pid ]; then

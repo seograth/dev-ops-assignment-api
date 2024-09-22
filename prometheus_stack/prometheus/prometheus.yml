@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 15s  # How often to scrape targets by default
+
+scrape_configs:
+  - job_name: 'fastapi'
+    static_configs:
+      - targets: ['fastapi:8000']  # Docker service name and port
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:8090']  # Prometheus itself
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - 'alertmanager:8093'  # Address of Alertmanager
+
+rule_files:
+  - "/etc/prometheus/alert.rules.yml"
+

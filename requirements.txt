@@ -3,3 +3,4 @@ uvicorn
 pytest
 pytest-cov
 httpx
+prometheus_client==0.14.1

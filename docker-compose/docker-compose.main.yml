@@ -1,5 +1,6 @@
 services:
   fastapi:
     image: seograth/fastapi-demo:latest
-    build:
     ports: 8000:80
+    environment:
+      - prometheus_multiproc_dir=/tmp

@@ -1,0 +1,21 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: 'default'
+
+receivers:
+  - name: 'default'
+    email_configs:
+      - to: 'stserentzoulias@outlook.com'
+        from: 'alertmanager@example.com'
+        smarthost: 'sandbox.smtp.mailtrap.io:587'
+        auth_username: 'b98fa3123e931d'
+        auth_password: '2a7066bf9bfee0'
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'job']
